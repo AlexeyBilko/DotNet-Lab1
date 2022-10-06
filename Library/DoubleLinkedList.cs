@@ -35,7 +35,6 @@ namespace Library
 		{
 			if (index < 0 || index > (Count - 1))
 			{
-                Console.WriteLine("Index out of Bound");
 				return;
 			}
 			Node<T> newNode = new Node<T>(data);
@@ -63,7 +62,6 @@ namespace Library
 		{
 			if (index < 0 || index > (Count - 1))
 			{
-                Console.WriteLine("Index out of Bound");
 				return;
 			}
 			Node<T> curr = FindNode(index);
@@ -74,7 +72,6 @@ namespace Library
 		{
 			if (index < 0 || index > (Count - 1))
 			{
-                Console.WriteLine("Index out of Bound");
 				return;
 			}
 			Node<T> curr = FindNode(index);
@@ -118,7 +115,6 @@ namespace Library
 			}
 			if (curr == null)
 			{
-                Console.WriteLine("Target Data Not found");
 				return false;
 			}
 
@@ -158,7 +154,7 @@ namespace Library
 			}
 			if (curr == null)
 			{
-				i = -1;// data not found
+				i = -1;
 			}
 			return i;
 		}
@@ -174,7 +170,7 @@ namespace Library
 			}
 			if (curr == null)
 			{
-				i = -1;// data not found
+				i = -1;
 			}
 			return i;
 		}
@@ -199,7 +195,6 @@ namespace Library
 		{
 			if (index < 0 || index > (Count - 1))
 			{
-                Console.WriteLine("Index out of Bound");
 				return default;
 			}
 			Node<T> target = FindNode(index);
@@ -302,13 +297,25 @@ namespace Library
 		{
 			private readonly DoubleLinkedList<T> list;
 			private Node<T>? currentNode;
-			private bool hasEnumerationStarted = false;
+			private bool Started = false;
 
-			public T Current => currentNode!.Data;
-			object? IEnumerator.Current => Current;
+            public T Current
+            {
+                get
+                {
+                    return currentNode!.Data;
+                }
+            }
 
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return Current;
+                }
+            }
 
-			public Enumerator(DoubleLinkedList<T> list)
+            public Enumerator(DoubleLinkedList<T> list)
 			{
 				this.list = list;
 				currentNode = list.head;
@@ -316,16 +323,16 @@ namespace Library
 
 			public void Reset()
 			{
-				hasEnumerationStarted = false;
+				Started = false;
 				currentNode = list.head;
 			}
 
 			public bool MoveNext()
 			{
-				if (!hasEnumerationStarted)
+				if (!Started)
 				{
 					currentNode = list.head;
-					hasEnumerationStarted = true;
+					Started = true;
 					return currentNode != null;
 				}
 

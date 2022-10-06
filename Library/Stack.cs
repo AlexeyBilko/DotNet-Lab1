@@ -7,21 +7,20 @@ using System.Threading.Tasks;
 
 namespace Library
 {
-	public class Stack<T> : ICollection<T>, IEnumerable<T>, IReadOnlyCollection<T>
+	public class Stack<T> : ICollection<T>, IEnumerable<T>, ICollection
 	{
 		private DoubleLinkedList<T> list = null;
-
         public bool IsReadOnly => false;
         public int Count => list.Count;
 
-		public delegate void ChangeHandler(Stack<T> sender);
-		public event ChangeHandler OnChanged;
-		public delegate void PushHandler(Stack<T> sender);
-		public event PushHandler OnPushed;
-		public delegate void PopHandler(Stack<T> sender);
-		public event PopHandler OnPoped;
-		public delegate void PeekHandler(Stack<T> sender);
-		public event PeekHandler OnPeeked;
+        public bool IsSynchronized => throw new NotImplementedException();
+
+        public object SyncRoot => throw new NotImplementedException();
+
+		public event Action OnChanged;
+		public event Action OnPushed;
+		public event Action OnPoped;
+		public event Action OnPeeked;
 
 		public Stack()
 		{
@@ -30,45 +29,58 @@ namespace Library
 
 		protected virtual void ChangedHandler()
 		{
-			OnChanged.Invoke(this);
+			Action tempAction = Volatile.Read(ref OnChanged);
+			if (tempAction != null) 
+				tempAction();
 		}
 
 		protected virtual void PushedHandler()
 		{
-			OnPushed.Invoke(this);
-			OnChanged.Invoke(this);
+			Action tempAction = Volatile.Read(ref OnPushed);
+			if (tempAction != null)
+				tempAction();
+
+			Action tempAction2 = Volatile.Read(ref OnChanged);
+			if (tempAction2 != null)
+				tempAction2();
 		}
 
 		protected virtual void PopedHandler()
 		{
-			OnPoped.Invoke(this);
-			OnChanged.Invoke(this);
+			Action tempAction = Volatile.Read(ref OnPoped);
+			if (tempAction != null)
+				tempAction();
+
+
+			Action tempAction2 = Volatile.Read(ref OnChanged);
+			if (tempAction2 != null)
+				tempAction2();
 		}
 
 		protected virtual void PeekedHandler()
 		{
-			OnPeeked.Invoke(this);
-			OnChanged.Invoke(this);
+			Action tempAction = Volatile.Read(ref OnPeeked);
+			if (tempAction != null)
+				tempAction();
 		}
 
 		private void Push(T data)
 		{
-			list.Add(data);
+			if (data != null)
+				list.Add(data);
+			else throw new NullReferenceException();
 			PushedHandler();
-			Console.WriteLine(data.ToString() + " inserted into stack");
 		}
 
 		public void Pop()
 		{
+			PopedHandler();
 			if (IsEmpty())
 			{
-				Console.WriteLine("Stack is Empty");
 				return;
 			}
 			T data = Peek();
 			list.RemoveAt(Count - 1);
-			PopedHandler();
-			Console.WriteLine(data.ToString() + " removed from stack");
 		}
 
 		public T Peek()
@@ -149,5 +161,10 @@ namespace Library
         {
 			return list.Remove(item);
         }
-	}
+
+        public void CopyTo(Array array, int index)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
