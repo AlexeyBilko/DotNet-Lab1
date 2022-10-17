@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace Library
 {
-    public class DoubleLinkedList<T> : ICollection<T>, IReadOnlyCollection<T>
+    public class DoubleLinkedList<T> : ICollection<T>, IReadOnlyCollection<T>, IEnumerable<T>, IEnumerable
 	{
-        private Node<T> head;
-        private Node<T> tail;
+        public Node<T> Head { get; private set; }
+        public Node<T> Tail { get; private set; }
 
         public int Count { get; private set; } = 0;
         public bool IsReadOnly => false;
@@ -18,15 +18,15 @@ namespace Library
         public void Add(T data)
 		{
 			Node<T> newNode = new Node<T>(data);
-			if (head == null)
+			if (Head == null)
 			{
-				head = tail = newNode;
+				Head = Tail = newNode;
 			}
 			else
 			{
-				tail.Next = newNode;
-				newNode.Prev = tail;
-				tail = newNode;
+				Tail.Next = newNode;
+				newNode.Prev = Tail;
+				Tail = newNode;
 			}
 			Count++;
 		}
@@ -35,17 +35,17 @@ namespace Library
 		{
 			if (index < 0 || index > (Count - 1))
 			{
-				return;
+				throw new IndexOutOfRangeException();
 			}
 			Node<T> newNode = new Node<T>(data);
 			Node<T> curr = FindNode(index);
 
 			Node<T> prevNode = curr.Prev;
-			if (curr == head)
+			if (curr == Head)
 			{
-				newNode.Next = head;
-				head.Prev = newNode;
-				head = newNode;
+				newNode.Next = Head;
+				Head.Prev = newNode;
+				Head = newNode;
 			}
 			else
 			{
@@ -62,39 +62,39 @@ namespace Library
 		{
 			if (index < 0 || index > (Count - 1))
 			{
-				return;
+				throw new IndexOutOfRangeException();
 			}
 			Node<T> curr = FindNode(index);
 			curr.Data = data;
 		}
 
-		public void RemoveAt(int index)
+		public bool RemoveAt(int index)
 		{
 			if (index < 0 || index > (Count - 1))
 			{
-				return;
+				return false;
 			}
 			Node<T> curr = FindNode(index);
 
 			Node<T> prevNode = curr.Prev;
 			Node<T> nextNode = curr.Next;
 
-			if (curr == head)
+			if (curr == Head)
 			{
-				head = head.Next;
-				if (head != null)
+				Head = Head.Next;
+				if (Head != null)
 				{
-					head.Prev = null;
+					Head.Prev = null;
 				}
 				else
 				{
-					head = tail = null;
+					Head = Tail = null;
 				}
 			}
-			else if (curr == tail)
+			else if (curr == Tail)
 			{
 				prevNode.Next = null;
-				tail = prevNode;
+				Tail = prevNode;
 			}
 			else
 			{
@@ -104,11 +104,13 @@ namespace Library
 			curr.Next = curr.Prev = null;
 
 			Count--;
+
+			return true;
 		}
 
 		public bool Remove(T data)
 		{
-			Node<T> curr = head;
+			Node<T> curr = Head;
 			while (curr != null && !curr.Data.Equals(data))
 			{
 				curr = curr.Next;
@@ -121,15 +123,23 @@ namespace Library
 			Node<T> prevNode = curr.Prev;
 			Node<T> nextNode = curr.Next;
 
-			if (curr == head)
+
+			if (curr == Head)
 			{
-				head = head.Next;
-				head.Prev = null;
-			}
-			else if (curr == tail)
+                if (Head.Next == null)
+                {
+                    Head = Tail = null;
+                }
+                else
+                {
+                    Head = Head.Next;
+                    Head.Prev = null;
+                }
+            }
+			else if (curr == Tail)
 			{
 				prevNode.Next = null;
-				tail = prevNode;
+				Tail = prevNode;
 			}
 			else
 			{
@@ -146,7 +156,7 @@ namespace Library
 		public int IndexOf(T data)
 		{
 			int i = 0;
-			Node<T> curr = head;
+			Node<T> curr = Head;
 			while (curr != null && !curr.Data.Equals(data))
 			{
 				curr = curr.Next;
@@ -162,7 +172,7 @@ namespace Library
 		public int LastIndexOf(T data)
 		{
 			int i = Count - 1;
-			Node<T> curr = tail;
+			Node<T> curr = Tail;
 			while (curr != null && !curr.Data.Equals(data))
 			{
 				curr = curr.Prev;
@@ -187,7 +197,7 @@ namespace Library
 
 		public void Clear()
 		{
-			head = tail = null;
+			Head = Tail = null;
 			Count = 0;
 		}
 
@@ -213,27 +223,27 @@ namespace Library
 
 		public void Reverse()
 		{
-			Node<T> prev = null;
-			Node<T> curr = head;
-			Node<T> next = null;
-			while (curr != null)
-			{
-				prev = curr.Prev;
-				next = curr.Next;
-				curr.Prev = next;
-				curr.Next = prev;
-				curr = next;
-			}
-			if (prev != null)
-			{
-				head = prev.Prev;
-			}
-		}
+            Node<T> prev = null;
+            Node<T> curr = Head;
+            Node<T> next = null;
+            while (curr != null)
+            {
+                prev = curr.Prev;
+                next = curr.Next;
+                curr.Prev = next;
+                curr.Next = prev;
+                curr = next;
+            }
+            if (prev != null)
+            {
+                Head = prev.Prev;
+            }
+        }
 
 		private Node<T> FindForward(int index)
 		{
 			int i = 0;
-			Node<T> curr = head;
+			Node<T> curr = Head;
 			while (curr != null && i != index)
 			{
 				curr = curr.Next;
@@ -245,7 +255,7 @@ namespace Library
 		private Node<T> FindReverse(int index)
 		{
 			int i = Count - 1;
-			Node<T> curr = tail;
+			Node<T> curr = Tail;
 			while (curr != null && i != index)
 			{
 				curr = curr.Prev;
@@ -257,7 +267,7 @@ namespace Library
 		public override string ToString()
 		{
 			string buf = "";
-			Node<T> curr = head;
+			Node<T> curr = Head;
 			while (curr != null)
 			{
 				buf += curr.Data.ToString();
@@ -269,80 +279,53 @@ namespace Library
 				buf.Remove(buf.Length - 1, 1);
 			}
 			if (buf.Length > 0) buf = buf.Substring(0, buf.Length - 1);
-			else if (buf.Length == 0) buf = "Stack is Empty - Nothing To Display";
+			else if (buf.Length == 0) buf = "Empty - Nothing To Display";
 			return buf;
 		}
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
-        }
-
-		public Enumerator GetEnumerator()
-		{
-			return new Enumerator(this);
+			if(arrayIndex >= Count)
+            {
+				throw new IndexOutOfRangeException();
+            }
+			if(Count > array.Length - arrayIndex)
+			{
+				throw new ArgumentException();
+			}
+			Node<T> current = Head;
+			for (int i = arrayIndex; i < Count; i++)
+			{
+				array.SetValue(current.Data, i);
+				current = current.Next;
+			}
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return GetEnumerator();
+			Node<T> current = Head;
+			while (current != null)
+			{
+				yield return current.Data;
+				current = current.Next;
+			}
 		}
 
 		IEnumerator<T> IEnumerable<T>.GetEnumerator()
 		{
-			return GetEnumerator();
+			Node<T> current = Head;
+            while (current != null)
+            {
+                yield return current.Data;
+                current = current.Next;
+            }
 		}
 
-		public class Enumerator : IEnumerator<T>
-		{
-			private readonly DoubleLinkedList<T> list;
-			private Node<T>? currentNode;
-			private bool Started = false;
-
-            public T Current
+        public static IEnumerable TestIEnumerable(IEnumerable source)
+        {
+            foreach (object o in source)
             {
-                get
-                {
-                    return currentNode!.Data;
-                }
-            }
-
-            object IEnumerator.Current
-            {
-                get
-                {
-                    return Current;
-                }
-            }
-
-            public Enumerator(DoubleLinkedList<T> list)
-			{
-				this.list = list;
-				currentNode = list.head;
-			}
-
-			public void Reset()
-			{
-				Started = false;
-				currentNode = list.head;
-			}
-
-			public bool MoveNext()
-			{
-				if (!Started)
-				{
-					currentNode = list.head;
-					Started = true;
-					return currentNode != null;
-				}
-
-				currentNode = currentNode!.Next;
-
-				return currentNode != list.head;
-			}
-
-            public void Dispose()
-            {
+                yield return o;
             }
         }
 	}

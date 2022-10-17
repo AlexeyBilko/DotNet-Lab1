@@ -7,20 +7,19 @@ using System.Threading.Tasks;
 
 namespace Library
 {
-	public class Stack<T> : ICollection<T>, IEnumerable<T>, ICollection
+	public class Stack<T> : ICollection, IEnumerable<T>, IEnumerable
 	{
 		private DoubleLinkedList<T> list = null;
         public bool IsReadOnly => false;
         public int Count => list.Count;
-
-        public bool IsSynchronized => throw new NotImplementedException();
-
-        public object SyncRoot => throw new NotImplementedException();
+        public bool IsSynchronized { get; }
+        public object SyncRoot { get; }
 
 		public event Action OnChanged;
 		public event Action OnPushed;
 		public event Action OnPoped;
 		public event Action OnPeeked;
+		public event Action OnClear;
 
 		public Stack()
 		{
@@ -29,63 +28,72 @@ namespace Library
 
 		protected virtual void ChangedHandler()
 		{
-			Action tempAction = Volatile.Read(ref OnChanged);
-			if (tempAction != null) 
-				tempAction();
+			Action Changed = Volatile.Read(ref OnChanged);
+			if (Changed != null) 
+				Changed();
 		}
 
 		protected virtual void PushedHandler()
 		{
-			Action tempAction = Volatile.Read(ref OnPushed);
-			if (tempAction != null)
-				tempAction();
+			Action Pushed = Volatile.Read(ref OnPushed);
+			if (Pushed != null)
+				Pushed();
 
-			Action tempAction2 = Volatile.Read(ref OnChanged);
-			if (tempAction2 != null)
-				tempAction2();
+			ChangedHandler();
 		}
 
 		protected virtual void PopedHandler()
 		{
-			Action tempAction = Volatile.Read(ref OnPoped);
-			if (tempAction != null)
-				tempAction();
+			Action Poped = Volatile.Read(ref OnPoped);
+			if (Poped != null)
+				Poped();
 
+			ChangedHandler();
+		}
 
-			Action tempAction2 = Volatile.Read(ref OnChanged);
-			if (tempAction2 != null)
-				tempAction2();
+		protected virtual void ClearedHandler()
+		{
+			Action Cleared = Volatile.Read(ref OnClear);
+			if (Cleared != null)
+				Cleared();
+
+			ChangedHandler();
 		}
 
 		protected virtual void PeekedHandler()
 		{
-			Action tempAction = Volatile.Read(ref OnPeeked);
-			if (tempAction != null)
-				tempAction();
+			Action Peeked = Volatile.Read(ref OnPeeked);
+			if (Peeked != null)
+				Peeked();
 		}
 
-		private void Push(T data)
+		public void Push(T data)
 		{
+            PushedHandler();
 			if (data != null)
 				list.Add(data);
 			else throw new NullReferenceException();
-			PushedHandler();
 		}
 
-		public void Pop()
+		public T Pop()
 		{
 			PopedHandler();
 			if (IsEmpty())
 			{
-				return;
+				throw new InvalidOperationException();
 			}
 			T data = Peek();
 			list.RemoveAt(Count - 1);
-		}
+            return data;
+        }
 
 		public T Peek()
 		{
 			PeekedHandler();
+            if (IsEmpty())
+            {
+                throw new InvalidOperationException();
+            }
 			return list.Get(Count - 1);
 		}
 
@@ -108,45 +116,23 @@ namespace Library
 			return ((IEnumerable<T>)list).GetEnumerator();
 		}
 
-		public void Add(T item)
-        {
-			Push(item);
-        }
-
         public void Clear()
-        {
-            list.Clear();
-			ChangedHandler();
+		{
+			ClearedHandler();
+			list.Clear();
 		}
 
-        public bool Contains(T item)
+        public static IEnumerable TestIEnumerable(IEnumerable source)
         {
-            return list.Contains(item);
-        }
-
-        public void CopyTo(T[] array, int arrayIndex)
-        {
-			if (array == null)
-			{
-				throw new NullReferenceException();
-			}
-			if (arrayIndex < 0 || arrayIndex > array.Length)
-			{
-				throw new IndexOutOfRangeException();
-			}
-			if (array.Length - arrayIndex < Count)
-			{
-				throw new ArgumentException();
-			}
-			for (int i = arrayIndex; i < list.Count; i++)
+            foreach (object o in source)
             {
-				array.SetValue(list.Get(i), arrayIndex);
+                yield return o;
             }
         }
-
+		
 		public T[] ToArray()
         {
-			if(list == null) return null;
+			if(list == null) throw new NullReferenceException();
 			T[] objArray = new T[Count];
 			int i = 0;
 			while (i < Count)
@@ -156,15 +142,22 @@ namespace Library
 			}
 			return objArray;
 		}
-
-        public bool Remove(T item)
+        public void CopyTo(Array array, int arrayIndex)
         {
-			return list.Remove(item);
-        }
-
-        public void CopyTo(Array array, int index)
-        {
-            throw new NotImplementedException();
+            if (array == null)
+            {
+                throw new NullReferenceException();
+            }
+            if (arrayIndex < 0 || arrayIndex > array.Length)
+            {
+                throw new IndexOutOfRangeException();
+            }
+            if (array.Length - arrayIndex < Count)
+            {
+                throw new ArgumentException();
+			}
+			if (IsEmpty()) return;
+			list.CopyTo(array as T[],arrayIndex);
         }
     }
 }
