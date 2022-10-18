@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Library
 {
-	public class Stack<T> : ICollection, IEnumerable<T>, IEnumerable
+	public class Stack<T> : ICollection, IEnumerable<T>
 	{
-		private DoubleLinkedList<T> list = null;
+		private DoubleLinkedList<T> list;
         public bool IsReadOnly => false;
         public int Count => list.Count;
         public bool IsSynchronized { get; }
@@ -23,22 +23,38 @@ namespace Library
 
 		public Stack()
 		{
-			this.list = new DoubleLinkedList<T>();
+			list = new DoubleLinkedList<T>();
 		}
+
+        public Stack(Array array)
+		{
+			list = new DoubleLinkedList<T>();
+			foreach (T item in array)
+            {
+                Push(item);
+            }
+        }
+
+        public int OnChangedCount { get; private set; }
+        public int OnPushedCount { get; private set; }
+        public int OnPopedCount { get; private set; }
+        public int OnPeekedCount { get; private set; }
+        public int OnClearedCount { get; private set; }
 
 		protected virtual void ChangedHandler()
 		{
 			Action Changed = Volatile.Read(ref OnChanged);
 			if (Changed != null) 
 				Changed();
-		}
+            OnChangedCount++;
+        }
 
 		protected virtual void PushedHandler()
 		{
 			Action Pushed = Volatile.Read(ref OnPushed);
 			if (Pushed != null)
 				Pushed();
-
+			OnPushedCount++;
 			ChangedHandler();
 		}
 
@@ -47,7 +63,7 @@ namespace Library
 			Action Poped = Volatile.Read(ref OnPoped);
 			if (Poped != null)
 				Poped();
-
+			OnPopedCount++;
 			ChangedHandler();
 		}
 
@@ -56,7 +72,7 @@ namespace Library
 			Action Cleared = Volatile.Read(ref OnClear);
 			if (Cleared != null)
 				Cleared();
-
+			OnClearedCount++;
 			ChangedHandler();
 		}
 
@@ -65,6 +81,7 @@ namespace Library
 			Action Peeked = Volatile.Read(ref OnPeeked);
 			if (Peeked != null)
 				Peeked();
+            OnPeekedCount++;
 		}
 
 		public void Push(T data)
@@ -132,16 +149,19 @@ namespace Library
 		
 		public T[] ToArray()
         {
-			if(list == null) throw new NullReferenceException();
-			T[] objArray = new T[Count];
-			int i = 0;
-			while (i < Count)
-			{
-				objArray[i] = list.Get(Count - i - 1);
-				i++;
-			}
-			return objArray;
-		}
+            if (list == null)
+            {
+                throw new NullReferenceException();
+            }
+            T[] array = new T[Count];
+            int i = 0;
+            while (i < Count)
+            {
+                array[i] = list.Get(Count - i - 1);
+                i++;
+            }
+            return array;
+        }
         public void CopyTo(Array array, int arrayIndex)
         {
             if (array == null)

@@ -10,6 +10,22 @@ namespace Library.Tests
 {
     public class StackUnitTests
     {
+
+        [Test]
+        public void ConstructorWithArray_NotEmptyArray_StackCountEqualsArrayLength()
+        {
+            int[] array = new[]
+            {
+                AutoFaker.Generate<int>(), 
+                AutoFaker.Generate<int>(), 
+                AutoFaker.Generate<int>()
+            };
+            var stack = new Stack<int>(array);
+
+            stack.Count.Should().Be(array.Length);
+
+        }
+
         [Test]
         public void Push_AddValueToEmptyStack_CountEquals1()
         {
@@ -27,8 +43,8 @@ namespace Library.Tests
             var stack = new Stack<string>();
             string tmp = null;
 
-            Action act = () => stack.Push(tmp);
-            act.Should().Throw<NullReferenceException>();
+            Action test = () => stack.Push(tmp);
+            test.Should().Throw<NullReferenceException>();
         }
 
         [Test]
@@ -160,8 +176,8 @@ namespace Library.Tests
         {
             var stack = new Stack<int>();
 
-            Action act = () => stack.Peek();
-            act.Should().Throw<InvalidOperationException>();
+            Action test = () => stack.Peek();
+            test.Should().Throw<InvalidOperationException>();
         }
 
         [Test]
@@ -189,8 +205,8 @@ namespace Library.Tests
         {
             var stack = new Stack<int>();
 
-            Action act = () => stack.Pop();
-            act.Should().Throw<InvalidOperationException>();
+            Action test = () => stack.Pop();
+            test.Should().Throw<InvalidOperationException>();
         }
 
         [Test]
@@ -304,8 +320,8 @@ namespace Library.Tests
 
             int[] array = new int[2];
 
-            Action act = () => stack.CopyTo(array, 0);
-            act.Should().Throw<ArgumentException>();
+            Action test = () => stack.CopyTo(array, 0);
+            test.Should().Throw<ArgumentException>();
         }
 
         [Test]
@@ -314,8 +330,8 @@ namespace Library.Tests
             var stack = GenerateNotEmptyStack();
 
             int[] array = new int[5];
-            Action act = () => stack.CopyTo(array, -2);
-            act.Should().Throw<IndexOutOfRangeException>();
+            Action test = () => stack.CopyTo(array, -2);
+            test.Should().Throw<IndexOutOfRangeException>();
         }
 
         [Test]
@@ -324,18 +340,17 @@ namespace Library.Tests
             var stack = new Stack<int>();
             int[] array = null;
 
-            Action act = () => stack.CopyTo(array, 0);
-            act.Should().Throw<NullReferenceException>();
+            Action test = () => stack.CopyTo(array, 0);
+            test.Should().Throw<NullReferenceException>();
         }
 
         [Test]
         public void ToArray_NullStack_NullReferenceException()
         {
             Stack<int> stack = null;
-            
 
-            Action act = () => stack.ToArray();
-            act.Should().Throw<NullReferenceException>();
+            Action test = () => stack.ToArray();
+            test.Should().Throw<NullReferenceException>();
         }
 
         [Test]

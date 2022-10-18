@@ -79,8 +79,8 @@ namespace Library.Tests
 
             var valueToAdd = AutoFaker.Generate<int>();
 
-            Action act = () => list.Add(valueToAdd, int.MinValue);
-            act.Should().Throw<IndexOutOfRangeException>();
+            Action test = () => list.Add(valueToAdd, int.MinValue);
+            test.Should().Throw<IndexOutOfRangeException>();
         }
 
         [Test]
@@ -90,8 +90,8 @@ namespace Library.Tests
 
             var valueToAdd = AutoFaker.Generate<int>();
 
-            Action act = () => list.Add(valueToAdd, list.Count);
-            act.Should().Throw<IndexOutOfRangeException>();
+            Action test = () => list.Add(valueToAdd, list.Count);
+            test.Should().Throw<IndexOutOfRangeException>();
         }
 
         [Test]
@@ -149,8 +149,8 @@ namespace Library.Tests
 
             var valueToSet = AutoFaker.Generate<int>();
             var index = list.Count;
-            Action act = () => list.Set(valueToSet, index);
-            act.Should().Throw<IndexOutOfRangeException>();
+            Action test = () => list.Set(valueToSet, index);
+            test.Should().Throw<IndexOutOfRangeException>();
         }
 
         [Test]
@@ -160,8 +160,8 @@ namespace Library.Tests
 
             var valueToSet = AutoFaker.Generate<int>();
             var index = int.MinValue;
-            Action act = () => list.Set(valueToSet, index);
-            act.Should().Throw<IndexOutOfRangeException>();
+            Action test = () => list.Set(valueToSet, index);
+            test.Should().Throw<IndexOutOfRangeException>();
         }
 
         [Test]
@@ -490,8 +490,8 @@ namespace Library.Tests
         {
             var list = GenerateNotEmptyList();
             int[] array = new int[10];
-            Action act = () => list.CopyTo(array, list.Count + 1);
-            act.Should().Throw<IndexOutOfRangeException>();
+            Action test = () => list.CopyTo(array, list.Count + 1);
+            test.Should().Throw<IndexOutOfRangeException>();
         }
 
         [Test]
@@ -499,8 +499,8 @@ namespace Library.Tests
         {
             var list = GenerateNotEmptyList();
             int[] array = new int[6];
-            Action act = () => list.CopyTo(array, 4);
-            act.Should().Throw<ArgumentException>();
+            Action test = () => list.CopyTo(array, 4);
+            test.Should().Throw<ArgumentException>();
         }
 
         [Test]
